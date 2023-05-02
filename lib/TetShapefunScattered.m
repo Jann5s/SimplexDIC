@@ -72,10 +72,10 @@ for ke = 1:Ne
     % -----------------------
     
     % find which points are inside the tetrahedron
-    I = TetInside(V,pos(Ibox,:),mar);
+    Itet = TetInside(V,pos(Ibox,:),mar);
     
     % reduce the list of points
-    Ibox = Ibox(I);
+    Ibox = Ibox(Itet);
     
     if isempty(Ibox)
         continue

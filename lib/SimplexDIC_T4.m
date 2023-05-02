@@ -17,6 +17,7 @@ function cor = SimplexDIC_T4(f,g,init,coor,conn,varargin)
 % verbose:  0,1,2
 % wantR:    (true) set the false to disable storing of R
 % wantU:    (false) set the true to enable storing of Ux, Uy and Uz
+% wantE:    (false) set the true to enable storing of Exx, Eyy, etc.
 % plotflag: (true) set to false to disable plotting
 
 figstr = 'SimplexDIC_T4';
@@ -51,6 +52,7 @@ opt.method = 'spline';
 opt.plotflag = true;
 opt.wantR = true;
 opt.wantU = false;
+opt.wantE = false;
 opt.Hax = [];
 
 % overwrite options
@@ -88,7 +90,12 @@ end
 if opt.verbose == 2
     fprintf('Generating the shapefunctions...\n')
 end
-[phi, E] = TetShapefunGridded(coor,conn,siz);
+
+if opt.wantE
+    [phi, E, phix, phiy, phiz] = TetShapefunGridded(coor,conn,siz);
+else
+    [phi, E] = TetShapefunGridded(coor,conn,siz);
+end
 
 % combine the mesh and the mask
 mask = (E ~= 0) & opt.mask;
@@ -223,6 +230,15 @@ if opt.wantU
     cor.Uy = single(Uy);
     cor.Uz = single(Uz);
 end
+if opt.wantE
+    cor.Exx = single(reshape(phix*a(Ix),n,m,d));
+    cor.Eyy = single(reshape(phiy*a(Iy),n,m,d));
+    cor.Ezz = single(reshape(phiz*a(Iz),n,m,d));
+    cor.Exy = single(reshape(0.5 * (phiy*a(Ix) + phix*a(Iy)),n,m,d));
+    cor.Exz = single(reshape(0.5 * (phiz*a(Ix) + phix*a(Iz)),n,m,d));
+    cor.Eyz = single(reshape(0.5 * (phiz*a(Iy) + phiy*a(Iz)),n,m,d));
+end
+
 
 
 

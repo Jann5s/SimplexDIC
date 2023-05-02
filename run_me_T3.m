@@ -82,6 +82,7 @@ init = zeros(Nn, 2);
 opt3.blur = [3, 1, 0];
 opt3.CLim = 0.01 * [-1, 1];
 opt3.wantU = true;
+opt3.wantE = true;
 
 % DIC
 cor3 = SimplexDIC_T3(f, g, init, coor3, conn3, opt3);

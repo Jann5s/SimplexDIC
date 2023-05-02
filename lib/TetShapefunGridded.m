@@ -1,4 +1,4 @@
-function [phi, E] = TetShapefunGridded(coor,conn,siz,varargin)
+function [phi, E, varargout] = TetShapefunGridded(coor,conn,siz,varargin)
 % [phi, E] = TetShapefunGridded(coor,conn,siz), compute T4
 % shapefunctions (S) from the mesh specified by coor and conn on an image
 % of siz = [rows, columns, slices]; E stores the element id for each voxel;
@@ -49,6 +49,15 @@ E = zeros(n,m,d,1);
 I = repmat(reshape((1:Np).',n,m,d),1,1,1,Nc);
 J = zeros(n,m,d,Nc);
 
+if nargout > 2
+    want_dphi = true;
+    Sx = zeros(n,m,d,Nc);
+    Sy = zeros(n,m,d,Nc);
+    Sz = zeros(n,m,d,Nc);
+else
+    want_dphi = false;
+end
+
 % initialize some temp vars
 li = zeros(1,6);
 lj = zeros(1,6);
@@ -68,8 +77,20 @@ for ke = 1:Ne
     % elemental connectivity
     con = conn(ke,:);
     
-    % get the nodes for this element (only the T3 part)
+    % get the nodes for this element (only the T4 part)
     pos = coor(con(1:4),1:3);
+
+    if want_dphi
+        % relative coordinates
+        x = pos(1:3, :) - pos(4, :);
+
+        % element derivative
+        dL = inv(transpose(x));
+    
+        % add the missing grad -> L(4) = 1 - sum(L(1:3))
+        dL(end+1, :) = -sum(dL, 1);
+    end
+    
     
     % enlarge the tetrahedron with the margin
     cen = mean(pos,1);
@@ -244,6 +265,13 @@ for ke = 1:Ne
                 J(i,j,k,3) = con(3);
                 J(i,j,k,4) = con(4);
 
+                if want_dphi
+                    Sx(i,j,k,:) = dL(:, 1);
+                    Sy(i,j,k,:) = dL(:, 2);
+                    Sz(i,j,k,:) = dL(:, 3);
+                end
+                
+
             end  % loop over i
         end  % loop over j
     end % loop over k
@@ -251,7 +279,14 @@ end % loop over ke
 
 % Assemble the matrix sparsely
 Is = (S ~= 0);
-phi = sparse(I(Is),J(Is),S(Is) ,Np ,Nn);
+phi = sparse(I(Is), J(Is), S(Is) ,Np ,Nn);
+
+if want_dphi
+    varargout{1} = sparse(I(Is), J(Is), Sx(Is), Np, Nn);
+    varargout{2} = sparse(I(Is), J(Is), Sy(Is), Np, Nn);
+    varargout{3} = sparse(I(Is), J(Is), Sz(Is), Np, Nn);
+end
+
 
 
 function x = Lerp(x1,x2,t)

@@ -261,7 +261,7 @@ end
 if opt.wantE
     cor.Exx = single(reshape(phix*a(Ix),n,m));
     cor.Eyy = single(reshape(phiy*a(Iy),n,m));
-    cor.Exy = single(reshape(phix*a(Iy),n,m));
+    cor.Exy = 0.5 * (single(reshape(phix*a(Iy),n,m)) + single(reshape(phiy*a(Ix),n,m)));
 end
 
 

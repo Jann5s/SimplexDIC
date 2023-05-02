@@ -1,5 +1,8 @@
 clear; close all;
 
+% add some the SimplexDIC library functions to the matlab path
+addpath('lib')
+
 % read the images
 imagepath = 'images/virtimage3D';
 f = raw_read(fullfile(imagepath,'virtimage3D_00_l_uint8_160x160x160.raw'));
@@ -84,6 +87,7 @@ init = zeros(Nn,3);
 % options
 opt.blur = [3, 1, 0];
 opt.wantU = true;
+opt.wantE = true;
 
 % DIC
 cor = SimplexDIC_T4(f, g, init, coor, conn, opt);
